@@ -6,17 +6,63 @@ const unsigned char star[] PROGMEM  = {  //sprite for the star aka player
     0x00, 0x10, 0x10, 0x28, 0xC6, 0x28, 0x10, 0x10, 0x00, 0x00,
       
 };
+// GLOBAL variables, you can use these anywhere after this point
 int gamestate = 0; //start the game on the title page
 int locx = 50; //players starting location left to right  in pixels
 int locy = 50; //players starting location up or down in pixels
 int alocx = 60; //asteroid starting location left to right in pixels
-int alocy = 0;  // asterpod starting location up or down in pixels
+int alocy = 0;// asterpod starting location up or down in pixels
+int adir = 0;// direction asteroid is going 
 int hp = 10; //players starting hp, currently does nothing
 int points = 0; //number of asteroids that have fallen off the screen currently still counts even if it hits player
-
+int VooKnew = 1;
+int fast = 3;
+int bottom = 48;
+int top  = 0;
+int left = 0;
+int right = 120;
 void VooDoo() { //this is a function to set the location of the adteroid after the previous one has fallen off the screen
-   alocx = random(1, 120) ; //sets asteroid locationx to a random place between 1 and 120 left to right
-   alocy = 0; //sets asteroids starting location to zero on the y axis up and down
+   VooKnew = random(1, 4) ; //choses wich corner asteroid will come out of
+      if (VooKnew == 1) {
+      alocx = left; //left
+      alocy = top; //top
+      adir = 0; //down right
+      }
+      if (VooKnew == 2) {
+       alocx = right; //right
+       alocy = top; //top
+       adir = 1; //down left
+      }
+      if (VooKnew == 3) {
+       alocx = left; //left
+       alocy = bottom; //bottom
+       adir = 3; //up right
+      }
+      if (VooKnew == 3) {
+       alocx = right; //right
+       alocy = bottom; //bottom
+       adir = 4; //up left
+      }
+      
+}
+void wiggle() { //makes the asteroid move
+  // move the asteroid down
+       if ((VooKnew == 1) && (alocy <= bottom)&& ab.everyXFrames(fast)) { 
+        alocx += 2;
+        alocy += 1; //to speed up asterid decrease the number in () or oncrease the number in this line
+      }
+      if ((VooKnew == 2) && (alocy <= bottom)&& ab.everyXFrames(fast)) { 
+        alocx -= 2;
+        alocy += 1; //to speed up asterid decrease the number in () or oncrease the number in this line
+      }
+      if ((VooKnew == 3) && (alocy >= top)&& ab.everyXFrames(fast)) { 
+        alocx += 2;
+        alocy -= 1; //to speed up asterid decrease the number in () or oncrease the number in this line
+      }
+      if ((VooKnew == 4) && (alocy >= top)&& ab.everyXFrames(fast)) { 
+        alocx -= 2;
+        alocy -= 1; //to speed up asterid decrease the number in () or oncrease the number in this line
+      }
 }
 void setup() {
   ab.begin();
@@ -46,15 +92,13 @@ void loop() {
   ab.print("VERSION 0.1 ");
     }
     if (gamestate == 1) {
-      // move the asteroid down
-       if ((alocy <= 50)&& ab.everyXFrames(3)) { //makes the asteroid move 1 pixel every x frame
-        alocy += 1; //to speed up asterid decrease the number in () or oncrease the number in this line
-      }
+      wiggle();
       //if asteroid falls off screen
-      if (alocy >= 50) { //if the old asteroid falls off screen execute the next two lines
+      if ((alocy >= bottom) or (alocy < top)) { //if the old asteroid falls off screen execute the next two lines
         points += 1; //takes players current points and adds 1 to it
         VooDoo(); // calls the VooDoo function to reset a new asteroid
       }
+      
      // move the player left one space
     if (ab.pressed(LEFT_BUTTON) && (locx > 1)){
     locx -= 1; //edited this to make the player move faster
@@ -78,6 +122,10 @@ void loop() {
   ab.print("points"); //prints the word points on the screen
   ab.setCursor((0), (10)); 
   ab.print(points);//prints the current value of the variable points on the screen
+  ab.setCursor((0), (20)); 
+  ab.print("hp"); //prints the word points on the screen
+  ab.setCursor((0), (30)); 
+  ab.print(hp);
   ab.setCursor((alocx), (alocy));  //sets the location of the asteroid
   ab.print("*");//puts the asteroid on the screen
   ab.drawBitmap(locx, locy, star, 8, 8, WHITE); //places the star (player) on the screen
